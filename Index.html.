@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NFL House Calculator</title>
+  <style>
+    body {
+      background: #F7F7F7;
+      font-family: Inter, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding-top: 40px;
+    }
+    .card {
+      background: white;
+      padding: 40px;
+      width: 420px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    h1 {
+      font-family: "Playfair Display", serif;
+      text-align: center;
+      margin-bottom: 30px;
+      color: #1A1A1A;
+    }
+    label {
+      font-size: 14px;
+      color: #333;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 20px 0;
+      border-radius: 10px;
+      border: 1px solid #DDD;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #D9C27A;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #1A1A1A;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 30px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .highlight {
+      color: #D9C27A;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>NFL House Calculator</h1>
+
+    <label>True Spread (Team A - Team B)</label>
+    <input id="trueSpread" type="number" step="0.5">
+
+    <label>Public Favorite %</label>
+    <input id="publicFav" type="number" step="1">
+
+    <label>Total Handle ($)</label>
+    <input id="totalHandle" type="number" step="100">
+
+    <button onclick="calculate()">Calculate House Line</button>
+
+    <div class="result">
+      <p id="lineOut"></p>
+      <p id="upsetOut"></p>
+    </div>
+  </div>
+
+  <script>
+    function calculate() {
+      const S_true = parseFloat(document.getElementById('trueSpread').value);
+      const publicFav = parseFloat(document.getElementById('publicFav').value);
+      const H_total = parseFloat(document.getElementById('totalHandle').value);
+
+      const k = 1.0;
+
+      const B_fav = k * ((publicFav - 50) / 50);
+      const S_line = S_true + B_fav;
+
+      const H_fav = H_total * (publicFav / 100);
+      const H_dog = H_total - H_fav;
+
+      let bestUpsetMargin = 0;
+      let bestHouseProfit = -Infinity;
+
+      for (let U = 1; U <= 7; U++) {
+        const payoutDog = H_dog * (100 / 110);
+        const houseProfit = H_fav - payoutDog;
+
+        if (houseProfit > bestHouseProfit) {
+          bestHouseProfit = houseProfit;
+          bestUpsetMargin = U;
+        }
+      }
+
+      document.getElementById('lineOut').innerHTML =
+        "<span class='highlight'>House Line:</span> Team A -" + S_line.toFixed(1);
+
+      document.getElementById('upsetOut').innerHTML =
+        "<span class='highlight'>Optimal Upset:</span> Team B wins by " +
+        bestUpsetMargin + "<br>" +
+        "<span class='highlight'>House Profit:</span> $" + bestHouseProfit.toFixed(0);
+    }
+  </script>
+</body>
+</html>
